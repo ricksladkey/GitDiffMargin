@@ -47,7 +47,20 @@ namespace GitDiffMargin.Git
 
                     var relativeFilepath = filename.Replace(directoryInfo.FullName + "\\", string.Empty);
 
-                    var from = TreeDefinition.From(repo.Head.Tip.Tree);
+                    // Determine 'from' and 'to' trees.
+                    var currentBranch = repo.Head.Name;
+                    var baseCommitEntry = repo.Config.Get<string>(string.Format("branch.{0}.diffmarginbase", currentBranch));
+                    Tree tree = null;
+                    if (baseCommitEntry != null)
+                    {
+                        var baseCommit = repo.Lookup<Commit>(baseCommitEntry.Value);
+                        if (baseCommit != null)
+                        {
+                            // Found a merge base to diff from.
+                            tree = baseCommit.Tree;
+                        }
+                    }
+                    var from = TreeDefinition.From(tree ?? repo.Head.Tip.Tree);
                     var treeDefinition = from.Add(relativeFilepath, newBlob, Mode.NonExecutableFile);
                     var to = repo.ObjectDatabase.CreateTree(treeDefinition);
                     
