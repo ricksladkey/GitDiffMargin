@@ -60,11 +60,12 @@ namespace GitDiffMargin.Git
                             tree = baseCommit.Tree;
                         }
                     }
-                    var from = TreeDefinition.From(tree ?? repo.Head.Tip.Tree);
+                    tree = tree ?? repo.Head.Tip.Tree;
+                    var from = TreeDefinition.From(tree);
                     var treeDefinition = from.Add(relativeFilepath, newBlob, Mode.NonExecutableFile);
                     var to = repo.ObjectDatabase.CreateTree(treeDefinition);
                     
-                    var treeChanges = repo.Diff.Compare(repo.Head.Tip.Tree, to, compareOptions: new CompareOptions { ContextLines = ContextLines, InterhunkLines = 0 });
+                    var treeChanges = repo.Diff.Compare(tree, to, compareOptions: new CompareOptions { ContextLines = ContextLines, InterhunkLines = 0 });
                     var gitDiffParser = new GitDiffParser(treeChanges.Patch, ContextLines);
                     var hunkRangeInfos = gitDiffParser.Parse();
 
