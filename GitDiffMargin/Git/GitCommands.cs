@@ -79,13 +79,13 @@ namespace GitDiffMargin.Git
 
         private byte[] AdaptCrlf(IRepository repo, byte[] content, ITextDocument textDocument)
         {
-            var autocrlf = repo.Config.Get<bool>("core.autocrlf");
+            var autocrlf = repo.Config.Get<string>("core.autocrlf");
 
             var docu = _dte.Documents.AllDocuments().FirstOrDefault(doc => doc.FullName == textDocument.FilePath);
 
             if (docu != null && docu.Language == "HTML") return content;
 
-            if (autocrlf == null || !autocrlf.Value) return content;
+            if (autocrlf == null || autocrlf.Value != "true") return content;
 
 #if false
             // Figure out why this doesn't work.
@@ -101,7 +101,7 @@ namespace GitDiffMargin.Git
             var content = textDocument.Encoding.GetBytes(currentText); 
             
             var preamble = textDocument.Encoding.GetPreamble();
-            if (preamble.Length <= 0) return null;
+            if (preamble == null) return null;
 
             var completeContent = new byte[preamble.Length + content.Length];
             Buffer.BlockCopy(preamble, 0, completeContent, 0, preamble.Length);
