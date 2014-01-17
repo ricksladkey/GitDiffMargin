@@ -87,11 +87,8 @@ namespace GitDiffMargin.Git
 
             if (autocrlf == null || autocrlf.Value != "true") return content;
 
-#if false
-            // Figure out why this doesn't work.
             var contentText = Encoding.UTF8.GetString(content);
             content = Encoding.UTF8.GetBytes(contentText.Replace("\r\n", "\n"));
-#endif
             return content;
         }
 
