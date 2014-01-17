@@ -34,7 +34,8 @@ namespace GitDiffMargin
 
                     if (!string.IsNullOrWhiteSpace(solutionDirectory))
                     {
-                        _watcher = new FileSystemWatcher(solutionDirectory) {IncludeSubdirectories = true};
+                        var gitDirectory = Path.Combine(solutionDirectory, ".git");
+                        _watcher = new FileSystemWatcher(gitDirectory);
                         _watcher.Changed += HandleFileSystemChanged;
                         _watcher.Created += HandleFileSystemChanged;
                         _watcher.Deleted += HandleFileSystemChanged;
@@ -47,6 +48,7 @@ namespace GitDiffMargin
         
         private void HandleFileSystemChanged(object sender, FileSystemEventArgs e)
         {
+            System.Diagnostics.Debug.WriteLine("HandleFileSystemChanged: {0} for {1}", e.ChangeType, e.FullPath);
             Action action = () => ProcessFileSystemChange(e);
             Task.Factory.StartNew(action, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Default);
         }

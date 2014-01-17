@@ -187,18 +187,30 @@ namespace GitDiffMargin
             if (!_dirty && !forceReparse)
                 return;
 
+            if (_dirty)
+                System.Diagnostics.Debug.WriteLine("TryReparse: _dirty = true");
+            if (forceReparse)
+                System.Diagnostics.Debug.WriteLine("TryReparse: forceReparse = true");
+
             if (DateTimeOffset.Now - _lastEdit < ReparseDelay)
                 return;
+
+            System.Diagnostics.Debug.WriteLine("TryReparse: out of date by {0} seconds", (DateTimeOffset.Now - _lastEdit).Duration().TotalSeconds);
 
             if (Interlocked.CompareExchange(ref _parsing, 1, 0) == 0)
             {
                 try
                 {
+                    System.Diagnostics.Debug.WriteLine("TryReparse: Reparse started");
                     Task task = Task.Factory.StartNew(ReParse, CancellationToken.None, TaskCreationOptions.None, _taskScheduler);
-                    task.ContinueWith(_ => _parsing = 0);
+                    task.ContinueWith(_ => {
+                        System.Diagnostics.Debug.WriteLine("TryReparse: Reparse finished");
+                        _parsing = 0;
+                    });
                 }
                 catch
                 {
+                    System.Diagnostics.Debug.WriteLine("TryReparse: Reparse crashed starting");
                     _parsing = 0;
                     throw;
                 }
@@ -214,6 +226,7 @@ namespace GitDiffMargin
             }
             catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine("Reparse: crashed ({0})", ex.ToString());
                 if (ErrorHandler.IsCriticalException(ex))
                     throw;
             }
